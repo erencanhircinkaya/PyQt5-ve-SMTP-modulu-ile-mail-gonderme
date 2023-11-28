@@ -1,0 +1,79 @@
+import sys
+from PyQt5.QtWidgets import QApplication,QWidget,QLabel,QLineEdit,QTextEdit,QPushButton,QVBoxLayout,QHBoxLayout
+from PyQt5.QtGui import QIcon,QPixmap
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+class EmailSenderApp(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.init_ui()
+
+    def init_ui(self):
+        self.sender_label = QLabel("Gönderen E-Posta:")
+        self.sender_entry = QLineEdit()
+
+        self.password_label = QLabel("Şifre:")
+        self.password_entry = QLineEdit()
+        self.password_entry.setEchoMode(QLineEdit.Password)
+
+        self.receiver_label = QLabel("Alıcı E-Posta:")
+        self.receiver_entry = QLineEdit()
+
+        self.subject_label = QLabel("Konu:")
+        self.subject_entry = QLineEdit()
+
+        self.message_label = QLabel("Mesaj:")
+        self.message_entry = QTextEdit()
+
+        self.send_button = QPushButton("Gönder")
+        self.send_button.clicked.connect(self.send_email)
+
+        layoutV = QVBoxLayout()
+        layoutV.addWidget(self.sender_label)
+        layoutV.addWidget(self.sender_entry)
+        layoutV.addWidget(self.password_label)
+        layoutV.addWidget(self.password_entry)
+        layoutV.addWidget(self.receiver_label)
+        layoutV.addWidget(self.receiver_entry)
+        layoutV.addWidget(self.subject_label)
+        layoutV.addWidget(self.subject_entry)
+        layoutV.addWidget(self.message_label)
+        layoutV.addWidget(self.message_entry)
+        layoutV.addWidget(self.send_button)
+
+        icon = QIcon("C:\\Users\\Erencan\\Desktop\\PyQt5 Dersleri\\Ödev\\Mail Gönderme Ödev\\mail.png")
+        self.setWindowIcon(icon)
+        self.setLayout(layoutV)
+        self.setGeometry(100,100,500,700)
+        self.setWindowTitle("Mail Gönderme Uygulaması")
+        self.show()
+
+    def send_email(self):
+        sender_email = self.sender_entry.text()
+        password = self.password_entry.text()
+        receiver_email = self.receiver_entry.text()
+        subject = self.subject_entry.text()
+        body = self.message_entry.toPlainText()
+
+        message = MIMEMultipart()
+        message['From'] = sender_email
+        message['To'] = receiver_email
+        message['Subject'] = subject
+        message.attach(MIMEText(body,'plain'))
+
+        try:
+            with smtplib.SMTP('smtp.outlook.com',587) as server:
+                server.starttls()
+                server.login(sender_email,password)
+                server.sendmail(sender_email,receiver_email,message.as_string())
+                print("E-posta gönderildi.")
+        except Exception as e:
+            print("E-posta gönderilirken bir hata oluştu:",str(e))
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    email_app = EmailSenderApp()
+    sys.exit(app.exec_())
+
